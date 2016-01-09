@@ -1,0 +1,9 @@
+name: KingdomLifeAPI
+main: com.patrickzhong.kingdomlifeapi.KingdomLifeAPI
+version: 1
+
+commands:
+  apiadd:
+    description: Adds item to the API.
+    usage: /<command>
+    permission: kingdomlifeapi.apiadd
