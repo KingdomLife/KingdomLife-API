@@ -76,9 +76,11 @@ public class KingdomLifeAPI extends JavaPlugin{
 			    		getLogger().info("Line is of specified class");
 			    		outerloop:
 			    		for(int i = 0; i < infoArr.length; i++){
-			    			if(infoArr[i].equals("display-name:"))
-								info[0] = infoArr[i+1] + infoArr[i+2];
-							else if(infoArr[i].equals("Attack:")){
+			    			if(infoArr[i].equals("display-name:")){
+								info[0] = infoArr[i+1] +" "+ infoArr[i+2];
+								info[0] = info[0].substring(0, info[0].length()-1);
+			    			}
+			    			else if(infoArr[i].equals("Attack:")){
 								info[1] = infoArr[i+1];
 								info[1] = info[1].substring(0, info[1].length()-2);
 							}
@@ -93,7 +95,7 @@ public class KingdomLifeAPI extends JavaPlugin{
 			    		List<String> lores = new ArrayList<String>();
 			    		lores.add(ChatColor.RED+"⚔ Attack: "+info[1]);
 			    		lores.add(ChatColor.GOLD+"✣ Min. Level: "+minLevel);
-			    		String color = "";
+			    		String color = ChatColor.WHITE+"";
 			    		if(rarity.equals("uncommon"))
 			    			color = ChatColor.AQUA+"";
 			    		else if(rarity.equals("unique"))
