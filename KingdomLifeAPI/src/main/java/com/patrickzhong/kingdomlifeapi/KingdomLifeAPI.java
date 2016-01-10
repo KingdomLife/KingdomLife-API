@@ -53,7 +53,7 @@ public class KingdomLifeAPI extends JavaPlugin{
 				itemType = "BOW";
 			else if(type.equalsIgnoreCase("Rogue"))
 				itemType = "SHOVEL";
-			
+			getLogger().info("Primed variables.");
 			while ((line = br.readLine()) != null) {
 				String[] arr = line.split(",");
 			    if(arr[0].equals(rarity+"."+minLevel)){
@@ -63,13 +63,15 @@ public class KingdomLifeAPI extends JavaPlugin{
 						bytes = Hex.decodeHex(hexString.toCharArray());
 					} catch (DecoderException e) {
 						e.printStackTrace();
+						getLogger().info("DECODER EXCEPTION! What's that?");
 					}
 					
-			    	String itemString = new String(bytes, "UTF-8");
+					String itemString = new String(bytes, "UTF-8");
 			    	String[] info = new String[2];
-			    	
+			    	getLogger().info("Decoded hexadecimal:"+itemString);
 			    	if(itemString.contains(itemType) || (itemType.equals("SHOVEL") && (itemString.contains("DIAMOND_SHOVEL") || itemString.contains("GOLD_SHOVEL") || itemString.contains("IRON_SHOVEL") || itemString.contains("STONE_SHOVEL") || itemString.contains("WOOD_SHOVEL")))){
 			    		String[] infoArr = itemString.split(" ");
+			    		getLogger().info("Line is of specified class");
 			    		outerloop:
 			    		for(int i = 0; i < infoArr.length; i++){
 			    			if(infoArr[i].equals("display-name:"))
@@ -80,6 +82,7 @@ public class KingdomLifeAPI extends JavaPlugin{
 							}
 							
 							if(info[0] != null && info[1] != null){
+								getLogger().info("Extracted displayname and attack info from line.");
 								break outerloop;
 							}
 			    		}
@@ -98,17 +101,22 @@ public class KingdomLifeAPI extends JavaPlugin{
 			    		lores.add("");
 			    		lores.add(color+(rarity.charAt(0)+"").toUpperCase()+rarity.substring(1)+" Item");
 			    		im.setDisplayName(info[0]);
+			    		getLogger().info("Set displayname");
 			    		im.setLore(lores);
+			    		getLogger().info("Set lore");
 			    		item.setItemMeta(im);
+			    		getLogger().info("Set meta");
 			    		listOfItems.add(item);
+			    		getLogger().info("Added item");
 			    	}
 			    	
 			    }
 			}
 		} catch (IOException e) {
 			e.printStackTrace();
+			getLogger().info("IO EXCEPTION, dunno what caused it.");
 		}
-		
+		getLogger().info("Returned item.");
 		return listOfItems;
 	}
 	
