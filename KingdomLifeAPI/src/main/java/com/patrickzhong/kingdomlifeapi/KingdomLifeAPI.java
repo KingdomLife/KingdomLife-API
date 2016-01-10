@@ -6,6 +6,8 @@ import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
+import java.lang.reflect.Field;
+import java.lang.reflect.Modifier;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -69,21 +71,23 @@ public class KingdomLifeAPI extends JavaPlugin{
 					}
 					
 					String itemString = new String(bytes, "UTF-8");
-			    	String[] info = new String[4];
+			    	String[] info = new String[3];
 			    	getLogger().info("Decoded hexadecimal:"+itemString);
 			    	if(itemString.contains(itemType) || (itemType.equals("SHOVEL") && (itemString.contains("DIAMOND_SHOVEL") || itemString.contains("GOLD_SHOVEL") || itemString.contains("IRON_SHOVEL") || itemString.contains("STONE_SHOVEL") || itemString.contains("WOOD_SHOVEL")))){
-			    		String[] infoArr = itemString.split(" ");
+			    		String[] infoArr = itemString.split(String.format("%n"));
 			    		getLogger().info("Line is of specified class");
 			    		outerloop:
 			    		for(int i = 0; i < infoArr.length; i++){
-			    			if(infoArr[i].equals("display-name:")){
-								info[0] = infoArr[i+1] +" "+ infoArr[i+2];
-								info[0] = info[0].replace(String.format("%n"), "");
+			    			if(infoArr[i].contains("display-name:")){
+								//info[0] = infoArr[i+1] +" "+ infoArr[i+2];
+								info[0] = infoArr[i].substring(infoArr[i].indexOf("display-name:")+14);
+			    				//info[0] = info[0].replace(String.format("%n"), "");
 			    			}
-			    			else if(infoArr[i].equals("Attack:")){
-								info[1] = infoArr[i+1];
-								info[1] = info[1].substring(0, info[1].length()-2);
-								info[3] = infoArr[i-1].substring(4);
+			    			else if(infoArr[i].contains("Attack:")){
+								info[1] = infoArr[i].substring(infoArr[i].indexOf("Attack:")+8, infoArr[i].length()-1);
+			    				//info[1] = infoArr[i+1];
+								//info[1] = info[1].substring(0, info[1].length()-2);
+								//info[2] = infoArr[i-1].substring(4);
 							}
 							
 							if(info[0] != null && info[1] != null){
@@ -94,7 +98,7 @@ public class KingdomLifeAPI extends JavaPlugin{
 			    		ItemStack item = new ItemStack(Material.getMaterial(itemType));
 			    		ItemMeta im = item.getItemMeta();
 			    		List<String> lores = new ArrayList<String>();
-			    		lores.add(ChatColor.RED+info[3]+" Attack: "+info[1]);
+			    		lores.add(ChatColor.RED+info[2]+" Attack: "+info[1]);
 			    		lores.add(ChatColor.GOLD+"✣ Min. Level: "+minLevel);
 			    		String color = ChatColor.WHITE+"";
 			    		if(rarity.equals("uncommon"))
@@ -141,6 +145,21 @@ public class KingdomLifeAPI extends JavaPlugin{
 		}
 		return false;
 	}
+	
+	/*public void ModifyAllowedCharacters() throws NoSuchFieldException, SecurityException, IllegalArgumentException, IllegalAccessException
+	 {
+	  Field field = SharedConstants.class.getDeclaredField("allowedCharacters");
+	  field.setAccessible(true);
+	  Field modifiersField = Field.class.getDeclaredField( "modifiers" );
+	  modifiersField.setAccessible( true );
+	  modifiersField.setInt(field, field.getModifiers() & ~Modifier.FINAL);
+	  String oldallowedchars = (String)field.get(null);
+	  String suits = "\u2665\u2666\u2663\u2660";
+	  StringBuilder sb = new StringBuilder();
+	  sb.append( oldallowedchars );
+	  sb.append( suits );
+	  field.set( null, sb.toString() );
+	 }*/
 }
 	/*
 	public static void main(String[] args){
