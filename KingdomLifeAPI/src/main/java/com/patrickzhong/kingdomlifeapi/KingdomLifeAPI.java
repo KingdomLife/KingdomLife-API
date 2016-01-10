@@ -69,7 +69,7 @@ public class KingdomLifeAPI extends JavaPlugin{
 					}
 					
 					String itemString = new String(bytes, "UTF-8");
-			    	String[] info = new String[2];
+			    	String[] info = new String[4];
 			    	getLogger().info("Decoded hexadecimal:"+itemString);
 			    	if(itemString.contains(itemType) || (itemType.equals("SHOVEL") && (itemString.contains("DIAMOND_SHOVEL") || itemString.contains("GOLD_SHOVEL") || itemString.contains("IRON_SHOVEL") || itemString.contains("STONE_SHOVEL") || itemString.contains("WOOD_SHOVEL")))){
 			    		String[] infoArr = itemString.split(" ");
@@ -78,11 +78,12 @@ public class KingdomLifeAPI extends JavaPlugin{
 			    		for(int i = 0; i < infoArr.length; i++){
 			    			if(infoArr[i].equals("display-name:")){
 								info[0] = infoArr[i+1] +" "+ infoArr[i+2];
-								info[0] = info[0].substring(0, info[0].length()-1);
+								info[0] = info[0].replace(String.format("%n"), "");
 			    			}
 			    			else if(infoArr[i].equals("Attack:")){
 								info[1] = infoArr[i+1];
 								info[1] = info[1].substring(0, info[1].length()-2);
+								info[3] = infoArr[i-1].substring(4);
 							}
 							
 							if(info[0] != null && info[1] != null){
@@ -93,7 +94,7 @@ public class KingdomLifeAPI extends JavaPlugin{
 			    		ItemStack item = new ItemStack(Material.getMaterial(itemType));
 			    		ItemMeta im = item.getItemMeta();
 			    		List<String> lores = new ArrayList<String>();
-			    		lores.add(ChatColor.RED+"⚔ Attack: "+info[1]);
+			    		lores.add(ChatColor.RED+info[3]+" Attack: "+info[1]);
 			    		lores.add(ChatColor.GOLD+"✣ Min. Level: "+minLevel);
 			    		String color = ChatColor.WHITE+"";
 			    		if(rarity.equals("uncommon"))
