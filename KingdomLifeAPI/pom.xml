@@ -21,9 +21,9 @@
          <url>http://repo.bukkit.org/content/groups/public/</url>
        </repository>
        <repository>
-            <id>vault-repo</id>
-            <url>http://nexus.theyeticave.net/content/repositories/pub_releases</url>
-        </repository>
+         <id>mvnrepository</id>
+         <url>http://mvnrepository.com/artifact/org.glassfish.external/commons-codec-repackaged/10.0-b28</url>
+       </repository>
    </repositories>
    <dependencies>
        <dependency>
@@ -34,10 +34,9 @@
            <scope>provided</scope>
        </dependency>
        <dependency>
-            <groupId>net.milkbowl.vault</groupId>
-            <artifactId>VaultAPI</artifactId>
-            <version>1.5</version>
-            <scope>provided</scope>
-        </dependency>
-   </dependencies>
+	       <groupId>org.glassfish.external</groupId>
+	       <artifactId>commons-codec-repackaged</artifactId>
+	       <version>10.0-b28</version>
+           </dependency>
+       </dependencies>
 </project>
