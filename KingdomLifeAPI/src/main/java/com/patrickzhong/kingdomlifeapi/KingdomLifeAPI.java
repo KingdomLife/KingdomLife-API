@@ -56,7 +56,9 @@ public class KingdomLifeAPI extends JavaPlugin{
 			getLogger().info("Primed variables.");
 			while ((line = br.readLine()) != null) {
 				String[] arr = line.split(",");
-			    if(arr[0].equals(rarity+"."+minLevel)){
+				getLogger().info("Checking line");
+			    if(arr[0].split("::")[0].equals((rarity+"."+minLevel))){
+			    	getLogger().info("Line is a variable we're looking for.");
 			    	String hexString = arr[2].substring(1);    
 			    	byte[] bytes = null;
 					try {
