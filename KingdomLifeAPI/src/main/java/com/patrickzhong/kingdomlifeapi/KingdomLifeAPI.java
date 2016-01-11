@@ -23,6 +23,7 @@ import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.InventoryHolder;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
+import org.bukkit.plugin.Plugin;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.apache.commons.codec.DecoderException;
 import org.apache.commons.codec.binary.Hex;
@@ -30,6 +31,11 @@ import org.apache.commons.codec.binary.Hex;
 public class KingdomLifeAPI extends JavaPlugin{
 	private static String prefix = ChatColor.DARK_GRAY + "" + ChatColor.BOLD + "[" + ChatColor.GOLD + "KingdomLifeAPI" + ChatColor.DARK_GRAY + "" + ChatColor.BOLD + "] ";
 	String path = (new File("")).getAbsolutePath()+"/plugins/Skript/variables.csv";
+	public Plugin plugin;
+	
+	public void onEnable(){
+		plugin = this;
+	}
 	
 	public List<ItemStack> getItems(String type, String rarity, String minLevel){
 		BufferedReader br = null;
@@ -54,13 +60,12 @@ public class KingdomLifeAPI extends JavaPlugin{
 			else if(type.equalsIgnoreCase("Archer"))
 				itemType = "BOW";
 			else if(type.equalsIgnoreCase("Rogue"))
-				itemType = "SHOVEL";
-			getLogger().info("Primed variables.");
+				itemType = "LEVER";
+			else if(type.equalsIgnoreCase("Warrior"))
+				itemType = "AXE";
 			while ((line = br.readLine()) != null) {
 				String[] arr = line.split(",");
-				getLogger().info("Checking line");
-			    if(arr[0].split("::")[0].equals((rarity+"."+minLevel))){
-			    	getLogger().info("Line is a variable we're looking for.");
+				if(arr[0].split("::")[0].equals((rarity+"."+minLevel))){
 			    	String hexString = arr[2].substring(1);    
 			    	byte[] bytes = null;
 					try {
@@ -72,26 +77,18 @@ public class KingdomLifeAPI extends JavaPlugin{
 					
 					String itemString = new String(bytes, "UTF-8");
 			    	String[] info = new String[2];
-			    	getLogger().info("Decoded hexadecimal:"+itemString);
-			    	if(itemString.contains(itemType) || (itemType.equals("SHOVEL") && (itemString.contains("DIAMOND_SHOVEL") || itemString.contains("GOLD_SHOVEL") || itemString.contains("IRON_SHOVEL") || itemString.contains("STONE_SHOVEL") || itemString.contains("WOOD_SHOVEL")))){
+			    	if(itemString.contains(itemType) || (itemType.equals("AXE") && (itemString.contains("DIAMOND_AXE") || itemString.contains("GOLD_AXE") || itemString.contains("IRON_AXE") || itemString.contains("STONE_AXE") || itemString.contains("WOOD_AXE")))){
 			    		String[] infoArr = itemString.split(String.format("%n"));
-			    		getLogger().info("Line is of specified class");
 			    		outerloop:
 			    		for(int i = 0; i < infoArr.length; i++){
 			    			if(infoArr[i].contains("display-name:")){
-								//info[0] = infoArr[i+1] +" "+ infoArr[i+2];
 								info[0] = infoArr[i].substring(infoArr[i].indexOf("display-name:")+14);
-			    				//info[0] = info[0].replace(String.format("%n"), "");
 			    			}
 			    			else if(infoArr[i].contains("Attack:")){
 								info[1] = infoArr[i].substring(infoArr[i].indexOf("Attack:")+8, infoArr[i].length()-1);
-			    				//info[1] = infoArr[i+1];
-								//info[1] = info[1].substring(0, info[1].length()-2);
-								//info[2] = infoArr[i-1].substring(4);
-							}
+			    			}
 							
 							if(info[0] != null && info[1] != null){
-								getLogger().info("Extracted displayname and attack info from line.");
 								break outerloop;
 							}
 			    		}
@@ -110,13 +107,9 @@ public class KingdomLifeAPI extends JavaPlugin{
 			    		lores.add("");
 			    		lores.add(color+(rarity.charAt(0)+"").toUpperCase()+rarity.substring(1)+" Item");
 			    		im.setDisplayName(info[0]);
-			    		getLogger().info("Set displayname");
 			    		im.setLore(lores);
-			    		getLogger().info("Set lore");
 			    		item.setItemMeta(im);
-			    		getLogger().info("Set meta");
 			    		listOfItems.add(item);
-			    		getLogger().info("Added item");
 			    	}
 			    	
 			    }
@@ -125,8 +118,80 @@ public class KingdomLifeAPI extends JavaPlugin{
 			e.printStackTrace();
 			getLogger().info("IO EXCEPTION, dunno what caused it.");
 		}
-		getLogger().info("Returned item.");
+		
+		try {
+			br.close();
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+		
 		return listOfItems;
+	}
+	
+	public int level(String uuid, String type){
+		BufferedReader br = null;
+		String line = "";
+		
+		try {
+			br = new BufferedReader(new FileReader(path));
+		} catch (FileNotFoundException e) {
+			getLogger().info("FILE NOT FOUND!");
+			getLogger().info("PRINTING ERROR MESSAGE:");
+			getLogger().info(e.getMessage());
+			getLogger().info(e.getCause().toString());
+		}
+		
+		try {
+			while ((line = br.readLine()) != null) {
+				String[] arr = line.split(",");
+				if(arr[0].equals("level."+type+"."+uuid)){
+					int level = Integer.parseInt(arr[2].substring(1), 16);
+					br.close();
+					return level;
+				}
+			}
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+		
+		return -1;
+	}
+	
+	public String type(String uuid){
+		BufferedReader br = null;
+		String line = "";
+		
+		try {
+			br = new BufferedReader(new FileReader(path));
+		} catch (FileNotFoundException e) {
+			getLogger().info("FILE NOT FOUND!");
+			getLogger().info("PRINTING ERROR MESSAGE:");
+			getLogger().info(e.getMessage());
+			getLogger().info(e.getCause().toString());
+		}
+		
+		try {
+			while ((line = br.readLine()) != null) {
+				String[] arr = line.split(",");
+				if(arr[0].equals("class."+uuid)){
+					String hexString = arr[2].substring(1);    
+			    	byte[] bytes = null;
+					try {
+						bytes = Hex.decodeHex(hexString.toCharArray());
+					} catch (DecoderException e) {
+						e.printStackTrace();
+						getLogger().info("DECODER EXCEPTION! What's that?");
+					}
+					
+					String classString = new String(bytes, "UTF-8");
+					return classString;
+			    }
+			}
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+		
+		return "";
 	}
 	
 	public boolean onCommand(CommandSender sender, Command cmd, String label, String[] args){
@@ -142,146 +207,23 @@ public class KingdomLifeAPI extends JavaPlugin{
 	        }
 	        player.openInventory(inv);
 	        return true;
-		}
-		return false;
-	}
-	
-	/*public void ModifyAllowedCharacters() throws NoSuchFieldException, SecurityException, IllegalArgumentException, IllegalAccessException
-	 {
-	  Field field = SharedConstants.class.getDeclaredField("allowedCharacters");
-	  field.setAccessible(true);
-	  Field modifiersField = Field.class.getDeclaredField( "modifiers" );
-	  modifiersField.setAccessible( true );
-	  modifiersField.setInt(field, field.getModifiers() & ~Modifier.FINAL);
-	  String oldallowedchars = (String)field.get(null);
-	  String suits = "\u2665\u2666\u2663\u2660";
-	  StringBuilder sb = new StringBuilder();
-	  sb.append( oldallowedchars );
-	  sb.append( suits );
-	  field.set( null, sb.toString() );
-	 }*/
-}
-	/*
-	public static void main(String[] args){
-		String hexString = " 810576616C75652080F776616C75653A0A20203D3D3A206F72672E62756B6B69742E696E76656E746F72792E4974656D537461636B0A2020747970653A20535449434B0A20206D6574613A0A202020203D3D3A204974656D4D6574610A202020206D6574612D747970653A20554E53504543494649430A20202020646973706C61792D6E616D653A20C2A762466F75722D4C6561766564204272616E63680A202020206C6F72653A0A202020202D2027C2A763E29A942041747461636B3A20312D32270A202020202D2027C2A736E29CA3204D696E2E204C6576656C3A2030270A202020202D2027270A202020202D20C2A762556E636F6D6D6F6E204974656D0A".substring(1);    
-		byte[] bytes = null;
-		
-		try {
-			bytes = Hex.decodeHex(hexString.toCharArray());
-		} catch (DecoderException e) {
-			e.printStackTrace();
-		}
-		
-		String itemString = null;
-		try {
-			itemString = new String(bytes, "UTF-8");
-		} catch (UnsupportedEncodingException e) {
-			e.printStackTrace();
-		}
-		String[] info = new String[2];
-		String type = "STICK";
-		
-	   	if(itemString.contains(type)){
-	   		String[] infoArr = itemString.split(" ");
-	   		outerloop:
-	   		for(int i = 0; i < infoArr.length; i++){
-				if(infoArr[i].equals("display-name:"))
-					info[0] = ChatColor.translateAlternateColorCodes('§', infoArr[i+1] + infoArr[i+2]);
-				else if(infoArr[i].equals("Attack:")){
-					info[1] = infoArr[i+1];
-					info[1] = info[1].substring(0, info[1].length()-2);
-				}
-				
-				if(info[0] != null && info[1] != null){
-					break outerloop;
-				}
+		}else if(cmd.getName().equalsIgnoreCase("apiinfo")){
+			String uuid = ((Player) sender).getUniqueId().toString();
+			if(args.length > 0){
+				Player player = Bukkit.getServer().getPlayer(args[0]);
+				if(player == null)
+					uuid = Bukkit.getServer().getOfflinePlayer(args[0]).getUniqueId().toString();
+				else
+					uuid = player.getUniqueId().toString();
+				String type = type(uuid);
+				((Player)sender).sendMessage(ChatColor.YELLOW+args[1]+ChatColor.GRAY+" is a level "+level(uuid, type)+" "+type);
+			}else{
+				String type = type(uuid);
+				((Player)sender).sendMessage(ChatColor.GRAY+"You are a level "+level(uuid, type)+" "+type);
 			}
-			   		
-			System.out.println(info[0]);
-			System.out.println(info[1]);
-		}
-	}
-	
-}
-
-
-private static File dataFile;
-	public static FileConfiguration data;
-	
-	public void onEnable(){
-		try{
-            if(!getDataFolder().exists())getDataFolder().mkdir();
-            dataFile = new File(getDataFolder(), "data.yml");
-            if (!dataFile.exists())dataFile.createNewFile();
-        } catch (IOException e){
-            e.printStackTrace();
-        }
-		
-		getLogger().info("KingdomLifeAPI enabled!");
-	}
-	
-	public boolean onCommand(CommandSender sender, Command cmd, String label, String[] args){
-		if(cmd.getName().equalsIgnoreCase("apiadd")){
-			Player player = (Player) sender;
-			ItemStack item = player.getInventory().getItemInHand();
-			if(item == null || !item.hasItemMeta() || !item.getItemMeta().hasLore()){
-				messageP(player, ChatColor.RED+"You must be holding the item in your hand!");
-				return true;
-			}
-			
-			String minLevel = "";
-			String rarity = "";
-			String type = "";
-			
-			if(item.getType().equals(Material.STICK))
-				type = "Mage";
-			else if(item.getType().equals(Material.BOW))
-				type = "Archer";
-			else if(item.getType().equals(Material.DIAMOND_SPADE) || item.getType().equals(Material.GOLD_SPADE) || item.getType().equals(Material.IRON_SPADE) || item.getType().equals(Material.STONE_SPADE) || item.getType().equals(Material.WOOD_SPADE))
-				type = "Rogue";
-			
-			List<String> lore = item.getItemMeta().getLore();
-			for(int i = 0; i < lore.size(); i++){
-				String line = ChatColor.stripColor(lore.get(i));
-				if(line.contains("Level")){
-					String[] arr = line.split(" ");
-					minLevel = arr[arr.length-1];
-				}else if(line.contains("Item")){
-					String[] arr = line.split(" ");
-					rarity = arr[0];
-				}
-			}
-			
-			refreshD();
-			
-			List<ItemStack> items = (List<ItemStack>)data.getList(type+"."+rarity+"."+minLevel);
-			if(items == null)
-				items = new ArrayList<ItemStack>();
-			items.add(item);
-			data.set(type+"."+rarity+"."+minLevel, items);
-			saveD();
-			
-			messageP(player, ChatColor.GRAY+"Successfully added a "+ChatColor.YELLOW+"Level "+minLevel+" "+rarity+" "+type+"'s "+item.getItemMeta().getDisplayName()+ChatColor.GRAY+" to the API.");
 			return true;
 		}
-		
 		return false;
 	}
 	
-	
-	private void messageP(Player player, String message){
-		player.sendMessage(prefix+message);
-	}
-	
-	private void refreshD(){
-		data = YamlConfiguration.loadConfiguration(dataFile);
-	}
-	
-	private void saveD(){
-		try {
-			data.save(dataFile);
-		} catch(IOException e) {
-			  e.printStackTrace();
-		}
-	}
-	*/
+}
