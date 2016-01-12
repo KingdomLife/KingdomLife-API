@@ -1,0 +1,9 @@
+name: KingdomLifeAPI
+main: com.patrickzhong.kingdomlifeapi.KingdomLifeAPI
+version: 1
+
+commands:
+  apiview:
+    description: Views item using the API.
+    usage: /<command> <class> <rarity> <level>
+    permission: kingdomlifeapi.apiadd
