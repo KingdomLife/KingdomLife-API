@@ -24,6 +24,7 @@ import org.bukkit.inventory.InventoryHolder;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.plugin.Plugin;
+import org.bukkit.plugin.ServicePriority;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.apache.commons.codec.DecoderException;
 import org.apache.commons.codec.binary.Hex;
@@ -35,6 +36,9 @@ public class KingdomLifeAPI extends JavaPlugin{
 	
 	public void onEnable(){
 		plugin = this;
+		
+		getLogger().info("KINGDOMLIFE API ENABLED");
+		getServer().getServicesManager().register(KingdomLifeAPI.class, this, plugin, ServicePriority.Highest);
 	}
 	
 	public List<ItemStack> getItems(String type, String rarity, String minLevel){

@@ -7,3 +7,7 @@ commands:
     description: Views item using the API.
     usage: /<command> <class> <rarity> <level>
     permission: kingdomlifeapi.apiadd
+  apiinfo:
+    description: Views info about yourself or someone else.
+    usage: /<command> [player]
+    permission: kingdomlifeapi.apiinfo
