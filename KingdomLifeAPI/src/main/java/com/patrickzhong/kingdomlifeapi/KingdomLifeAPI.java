@@ -66,7 +66,7 @@ public class KingdomLifeAPI extends JavaPlugin{
 			else if(type.equalsIgnoreCase("Rogue"))
 				itemType = "LEVER";
 			else if(type.equalsIgnoreCase("Warrior"))
-				itemType = "AXE";
+				itemType = "STONE_AXE";
 			while ((line = br.readLine()) != null) {
 				String[] arr = line.split(",");
 				if(arr[0].split("::")[0].equals((rarity+"."+minLevel))){
@@ -81,7 +81,7 @@ public class KingdomLifeAPI extends JavaPlugin{
 					
 					String itemString = new String(bytes, "UTF-8");
 			    	String[] info = new String[2];
-			    	if(itemString.contains(itemType) || (itemType.equals("AXE") && (itemString.contains("DIAMOND_AXE") || itemString.contains("GOLD_AXE") || itemString.contains("IRON_AXE") || itemString.contains("STONE_AXE") || itemString.contains("WOOD_AXE")))){
+			    	if(itemString.contains(itemType) || (itemType.equals("AXE") && itemString.contains("AXE"))){
 			    		String[] infoArr = itemString.split(String.format("%n"));
 			    		outerloop:
 			    		for(int i = 0; i < infoArr.length; i++){
@@ -188,6 +188,7 @@ public class KingdomLifeAPI extends JavaPlugin{
 					}
 					
 					String classString = new String(bytes, "UTF-8");
+					classString = classString.split("-")[1];
 					return classString;
 			    }
 			}
