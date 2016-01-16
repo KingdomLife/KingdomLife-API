@@ -38,8 +38,10 @@ public class KingdomLifeAPI extends JavaPlugin{
 		plugin = this;
 		
 		getLogger().info("KINGDOMLIFE API ENABLED");
-		getServer().getServicesManager().register(KingdomLifeAPI.class, this, plugin, ServicePriority.Highest);
+		
+		//getServer().getServicesManager().register(KingdomLifeAPI.class, this, plugin, ServicePriority.Highest);
 	}
+	
 	
 	public List<ItemStack> getItems(String type, String rarity, String minLevel){
 		BufferedReader br = null;
