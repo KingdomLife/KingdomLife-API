@@ -31,7 +31,7 @@ import org.apache.commons.codec.binary.Hex;
 
 public class KingdomLifeAPI extends JavaPlugin{
 	private static String prefix = ChatColor.DARK_GRAY + "" + ChatColor.BOLD + "[" + ChatColor.GOLD + "KingdomLifeAPI" + ChatColor.DARK_GRAY + "" + ChatColor.BOLD + "] ";
-	String path = (new File("")).getAbsolutePath()+"/plugins/Skript/variables.csv";
+	static String path = (new File("")).getAbsolutePath()+"/plugins/Skript/variables.csv";
 	public Plugin plugin;
 	
 	public void onEnable(){
@@ -43,17 +43,17 @@ public class KingdomLifeAPI extends JavaPlugin{
 	}
 	
 	
-	public List<ItemStack> getItems(String type, String rarity, String minLevel){
+	public static List<ItemStack> getItems(String type, String rarity, String minLevel){
 		BufferedReader br = null;
 		String line = "";
 		
 		try {
 			br = new BufferedReader(new FileReader(path));
 		} catch (FileNotFoundException e) {
-			getLogger().info("FILE NOT FOUND!");
-			getLogger().info("PRINTING ERROR MESSAGE:");
-			getLogger().info(e.getMessage());
-			getLogger().info(e.getCause().toString());
+			//getLogger().info("FILE NOT FOUND!");
+			//getLogger().info("PRINTING ERROR MESSAGE:");
+			//getLogger().info(e.getMessage());
+			//getLogger().info(e.getCause().toString());
 		}
 		
 		List<ItemStack> listOfItems = new ArrayList<ItemStack>();
@@ -78,7 +78,7 @@ public class KingdomLifeAPI extends JavaPlugin{
 						bytes = Hex.decodeHex(hexString.toCharArray());
 					} catch (DecoderException e) {
 						e.printStackTrace();
-						getLogger().info("DECODER EXCEPTION! What's that?");
+						//getLogger().info("DECODER EXCEPTION! What's that?");
 					}
 					
 					String itemString = new String(bytes, "UTF-8");
@@ -122,7 +122,7 @@ public class KingdomLifeAPI extends JavaPlugin{
 			}
 		} catch (IOException e) {
 			e.printStackTrace();
-			getLogger().info("IO EXCEPTION, dunno what caused it.");
+			//getLogger().info("IO EXCEPTION, dunno what caused it.");
 		}
 		
 		try {
@@ -134,17 +134,17 @@ public class KingdomLifeAPI extends JavaPlugin{
 		return listOfItems;
 	}
 	
-	public int level(String uuid, String type){
+	public static int level(String uuid, String type){
 		BufferedReader br = null;
 		String line = "";
 		
 		try {
 			br = new BufferedReader(new FileReader(path));
 		} catch (FileNotFoundException e) {
-			getLogger().info("FILE NOT FOUND!");
-			getLogger().info("PRINTING ERROR MESSAGE:");
-			getLogger().info(e.getMessage());
-			getLogger().info(e.getCause().toString());
+			//getLogger().info("FILE NOT FOUND!");
+			//getLogger().info("PRINTING ERROR MESSAGE:");
+			//getLogger().info(e.getMessage());
+			//getLogger().info(e.getCause().toString());
 		}
 		
 		try {
@@ -163,17 +163,17 @@ public class KingdomLifeAPI extends JavaPlugin{
 		return -1;
 	}
 	
-	public String type(String uuid){
+	public static String type(String uuid){
 		BufferedReader br = null;
 		String line = "";
 		
 		try {
 			br = new BufferedReader(new FileReader(path));
 		} catch (FileNotFoundException e) {
-			getLogger().info("FILE NOT FOUND!");
-			getLogger().info("PRINTING ERROR MESSAGE:");
-			getLogger().info(e.getMessage());
-			getLogger().info(e.getCause().toString());
+			//getLogger().info("FILE NOT FOUND!");
+			//getLogger().info("PRINTING ERROR MESSAGE:");
+			//getLogger().info(e.getMessage());
+			//getLogger().info(e.getCause().toString());
 		}
 		
 		try {
@@ -186,7 +186,7 @@ public class KingdomLifeAPI extends JavaPlugin{
 						bytes = Hex.decodeHex(hexString.toCharArray());
 					} catch (DecoderException e) {
 						e.printStackTrace();
-						getLogger().info("DECODER EXCEPTION! What's that?");
+						//getLogger().info("DECODER EXCEPTION! What's that?");
 					}
 					
 					String classString = new String(bytes, "UTF-8");
