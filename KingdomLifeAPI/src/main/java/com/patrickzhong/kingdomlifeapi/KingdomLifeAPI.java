@@ -32,15 +32,17 @@ import org.apache.commons.codec.binary.Hex;
 public class KingdomLifeAPI extends JavaPlugin{
 	private static String prefix = ChatColor.DARK_GRAY + "" + ChatColor.BOLD + "[" + ChatColor.GOLD + "KingdomLifeAPI" + ChatColor.DARK_GRAY + "" + ChatColor.BOLD + "] ";
 	static String path = (new File("")).getAbsolutePath()+"/plugins/Skript/variables.csv";
-	public Plugin plugin;
+	//public Plugin plugin;
 	
 	public void onEnable(){
-		plugin = this;
+		//plugin = this;
 		
 		getLogger().info("KINGDOMLIFE API ENABLED");
 		
 		//getServer().getServicesManager().register(KingdomLifeAPI.class, this, plugin, ServicePriority.Highest);
 	}
+	
+	
 	
 	
 	public static List<ItemStack> getItems(String type, String rarity, String minLevel){
