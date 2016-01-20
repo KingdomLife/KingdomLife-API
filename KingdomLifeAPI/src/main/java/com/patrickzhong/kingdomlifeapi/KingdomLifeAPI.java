@@ -24,6 +24,7 @@ import org.bukkit.inventory.InventoryHolder;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.plugin.Plugin;
+import org.bukkit.plugin.PluginManager;
 import org.bukkit.plugin.ServicePriority;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.apache.commons.codec.DecoderException;
@@ -37,15 +38,37 @@ public class KingdomLifeAPI extends JavaPlugin{
 	public void onEnable(){
 		//plugin = this;
 		
+		PluginManager pM = getServer().getPluginManager();
+		Plugin crates = pM.getPlugin("LootCrates");
+		Plugin mech = pM.getPlugin("Mechanics");
+		if(crates != null && !crates.isEnabled())
+			pM.enablePlugin(crates);
+		if(mech != null && !mech.isEnabled())
+			pM.enablePlugin(mech);
+		
 		getLogger().info("KINGDOMLIFE API ENABLED");
+		
+		
 		
 		//getServer().getServicesManager().register(KingdomLifeAPI.class, this, plugin, ServicePriority.Highest);
 	}
 	
+	public void onDisable(){
+		PluginManager pM = getServer().getPluginManager();
+		Plugin crates = pM.getPlugin("LootCrates");
+		Plugin mech = pM.getPlugin("Mechanics");
+		if(crates != null && crates.isEnabled())
+			pM.disablePlugin(crates);
+		if(mech != null && mech.isEnabled())
+			pM.disablePlugin(mech);
+	}
+	
+	public static String test(String testString){
+		return ChatColor.AQUA+"The API works! "+testString;
+	}
 	
 	
-	
-	public static List<ItemStack> getItems(String type, String rarity, String minLevel){
+	public List<ItemStack> getItems(String type, String rarity, String minLevel){
 		BufferedReader br = null;
 		String line = "";
 		
@@ -73,8 +96,11 @@ public class KingdomLifeAPI extends JavaPlugin{
 				itemType = "STONE_AXE";
 			while ((line = br.readLine()) != null) {
 				String[] arr = line.split(",");
-				if(arr[0].split("::")[0].equals((rarity+"."+minLevel))){
-			    	String hexString = arr[2].substring(1);    
+				String firstEl = arr[0].split("::")[0];
+				if(firstEl.equals((rarity+"."+minLevel)) || (rarity.equals("any") && (firstEl.equals("common."+minLevel) || firstEl.equals("uncommon."+minLevel) || firstEl.equals("unique."+minLevel) ||firstEl.equals("rare."+minLevel)))){
+					rarity = firstEl.split("\\.")[0];
+					getLogger().info(rarity);
+					String hexString = arr[2].substring(1);    
 			    	byte[] bytes = null;
 					try {
 						bytes = Hex.decodeHex(hexString.toCharArray());
@@ -136,17 +162,17 @@ public class KingdomLifeAPI extends JavaPlugin{
 		return listOfItems;
 	}
 	
-	public static int level(String uuid, String type){
+	public int level(String uuid, String type){
 		BufferedReader br = null;
 		String line = "";
 		
 		try {
 			br = new BufferedReader(new FileReader(path));
 		} catch (FileNotFoundException e) {
-			//getLogger().info("FILE NOT FOUND!");
-			//getLogger().info("PRINTING ERROR MESSAGE:");
-			//getLogger().info(e.getMessage());
-			//getLogger().info(e.getCause().toString());
+			getLogger().info("FILE NOT FOUND!");
+			getLogger().info("PRINTING ERROR MESSAGE:");
+			getLogger().info(e.getMessage());
+			getLogger().info(e.getCause().toString());
 		}
 		
 		try {
@@ -160,24 +186,24 @@ public class KingdomLifeAPI extends JavaPlugin{
 			}
 		} catch (IOException e) {
 			e.printStackTrace();
+			getLogger().info("ioexception level");
 		}
 		
 		return -1;
 	}
 	
-	public static String type(String uuid){
+	public String type(String uuid){
 		BufferedReader br = null;
 		String line = "";
 		
 		try {
 			br = new BufferedReader(new FileReader(path));
 		} catch (FileNotFoundException e) {
-			//getLogger().info("FILE NOT FOUND!");
-			//getLogger().info("PRINTING ERROR MESSAGE:");
-			//getLogger().info(e.getMessage());
-			//getLogger().info(e.getCause().toString());
+			getLogger().info("FILE NOT FOUND!");
+			getLogger().info("PRINTING ERROR MESSAGE:");
+			getLogger().info(e.getMessage());
+			getLogger().info(e.getCause().toString());
 		}
-		
 		try {
 			while ((line = br.readLine()) != null) {
 				String[] arr = line.split(",");
@@ -192,12 +218,13 @@ public class KingdomLifeAPI extends JavaPlugin{
 					}
 					
 					String classString = new String(bytes, "UTF-8");
-					classString = classString.split("-")[1];
-					return classString;
+					br.close();
+					return classString.toLowerCase().substring(2);
 			    }
 			}
 		} catch (IOException e) {
 			e.printStackTrace();
+			getLogger().info("ioexception type");
 		}
 		
 		return "";
