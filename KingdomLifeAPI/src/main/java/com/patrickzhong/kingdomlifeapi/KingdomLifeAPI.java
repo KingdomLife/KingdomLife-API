@@ -10,6 +10,7 @@ import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Stack;
 
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
@@ -30,21 +31,23 @@ import org.bukkit.plugin.java.JavaPlugin;
 import org.apache.commons.codec.DecoderException;
 import org.apache.commons.codec.binary.Hex;
 
+import com.rylinaux.plugman.util.PluginUtil;
+
 public class KingdomLifeAPI extends JavaPlugin{
 	private static String prefix = ChatColor.DARK_GRAY + "" + ChatColor.BOLD + "[" + ChatColor.GOLD + "KingdomLifeAPI" + ChatColor.DARK_GRAY + "" + ChatColor.BOLD + "] ";
 	static String path = (new File("")).getAbsolutePath()+"/plugins/Skript/variables.csv";
+	String[] plugins = {"LootCrates", "Mechanics", "Abilities"};
 	//public Plugin plugin;
 	
 	public void onEnable(){
 		//plugin = this;
 		
 		PluginManager pM = getServer().getPluginManager();
-		Plugin crates = pM.getPlugin("LootCrates");
-		Plugin mech = pM.getPlugin("Mechanics");
-		if(crates != null && !crates.isEnabled())
-			pM.enablePlugin(crates);
-		if(mech != null && !mech.isEnabled())
-			pM.enablePlugin(mech);
+		for(String s : plugins){
+			Plugin p = pM.getPlugin(s);
+			if(p != null)
+				PluginUtil.reload(p);
+		}
 		
 		getLogger().info("KINGDOMLIFE API ENABLED");
 		
@@ -55,12 +58,11 @@ public class KingdomLifeAPI extends JavaPlugin{
 	
 	public void onDisable(){
 		PluginManager pM = getServer().getPluginManager();
-		Plugin crates = pM.getPlugin("LootCrates");
-		Plugin mech = pM.getPlugin("Mechanics");
-		if(crates != null && crates.isEnabled())
-			pM.disablePlugin(crates);
-		if(mech != null && mech.isEnabled())
-			pM.disablePlugin(mech);
+		for(String s : plugins){
+			Plugin p = pM.getPlugin(s);
+			if(p != null && p.isEnabled())
+				PluginUtil.disable(p);
+		}
 	}
 	
 	public static String test(String testString){
@@ -195,6 +197,7 @@ public class KingdomLifeAPI extends JavaPlugin{
 	public String type(String uuid){
 		BufferedReader br = null;
 		String line = "";
+		String last = null;
 		
 		try {
 			br = new BufferedReader(new FileReader(path));
@@ -208,26 +211,35 @@ public class KingdomLifeAPI extends JavaPlugin{
 			while ((line = br.readLine()) != null) {
 				String[] arr = line.split(",");
 				if(arr[0].equals("class."+uuid)){
-					String hexString = arr[2].substring(1);    
-			    	byte[] bytes = null;
-					try {
-						bytes = Hex.decodeHex(hexString.toCharArray());
-					} catch (DecoderException e) {
-						e.printStackTrace();
-						//getLogger().info("DECODER EXCEPTION! What's that?");
-					}
-					
-					String classString = new String(bytes, "UTF-8");
-					br.close();
-					return classString.toLowerCase().substring(2);
+					last = arr[2].substring(1);
 			    }
 			}
+			br.close();
 		} catch (IOException e) {
 			e.printStackTrace();
 			getLogger().info("ioexception type");
 		}
 		
-		return "";
+		if(last != null){
+			String hexString = last;    
+	    	byte[] bytes = null;
+			try {
+				bytes = Hex.decodeHex(hexString.toCharArray());
+			} catch (DecoderException e) {
+				e.printStackTrace();
+				//getLogger().info("DECODER EXCEPTION! What's that?");
+			}
+			
+			String classString = "";
+			try {
+				classString = new String(bytes, "UTF-8");
+			} catch (UnsupportedEncodingException e) {
+				e.printStackTrace();
+			}
+			return classString.toLowerCase().substring(2);
+		}
+		
+		return "null";
 	}
 	
 	public boolean onCommand(CommandSender sender, Command cmd, String label, String[] args){
