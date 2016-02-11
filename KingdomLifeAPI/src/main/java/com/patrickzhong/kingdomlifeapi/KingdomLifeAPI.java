@@ -30,6 +30,7 @@ import org.bukkit.plugin.ServicePriority;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.apache.commons.codec.DecoderException;
 import org.apache.commons.codec.binary.Hex;
+import org.apache.commons.io.input.ReversedLinesFileReader;
 
 import com.rylinaux.plugman.util.PluginUtil;
 
@@ -87,6 +88,7 @@ public class KingdomLifeAPI extends JavaPlugin{
 		
 		try {
 			rarity = rarity.toLowerCase();
+			String lookedFor = rarity;
 			String itemType = "";
 			if(type.equalsIgnoreCase("Mage"))
 				itemType = "STICK";
@@ -97,58 +99,59 @@ public class KingdomLifeAPI extends JavaPlugin{
 			else if(type.equalsIgnoreCase("Warrior"))
 				itemType = "STONE_AXE";
 			while ((line = br.readLine()) != null) {
-				String[] arr = line.split(",");
-				String firstEl = arr[0].split("::")[0];
-				if(firstEl.equals((rarity+"."+minLevel)) || (rarity.equals("any") && (firstEl.equals("common."+minLevel) || firstEl.equals("uncommon."+minLevel) || firstEl.equals("unique."+minLevel) ||firstEl.equals("rare."+minLevel)))){
-					rarity = firstEl.split("\\.")[0];
-					getLogger().info(rarity);
-					String hexString = arr[2].substring(1);    
-			    	byte[] bytes = null;
-					try {
-						bytes = Hex.decodeHex(hexString.toCharArray());
-					} catch (DecoderException e) {
-						e.printStackTrace();
-						//getLogger().info("DECODER EXCEPTION! What's that?");
-					}
-					
-					String itemString = new String(bytes, "UTF-8");
-			    	String[] info = new String[2];
-			    	if(itemString.contains(itemType) || (itemType.equals("AXE") && itemString.contains("AXE"))){
-			    		String[] infoArr = itemString.split(String.format("%n"));
-			    		outerloop:
-			    		for(int i = 0; i < infoArr.length; i++){
-			    			if(infoArr[i].contains("display-name:")){
-								info[0] = infoArr[i].substring(infoArr[i].indexOf("display-name:")+14);
-			    			}
-			    			else if(infoArr[i].contains("Attack:")){
-								info[1] = infoArr[i].substring(infoArr[i].indexOf("Attack:")+8, infoArr[i].length()-1);
-			    			}
-							
-							if(info[0] != null && info[1] != null){
-								break outerloop;
-							}
-			    		}
-			    		ItemStack item = new ItemStack(Material.getMaterial(itemType));
-			    		ItemMeta im = item.getItemMeta();
-			    		List<String> lores = new ArrayList<String>();
-			    		lores.add(ChatColor.RED+"\u2694 Attack: "+info[1]);
-			    		lores.add(ChatColor.GOLD+"\u2723 Min. Level: "+minLevel);
-			    		String color = ChatColor.WHITE+"";
-			    		if(rarity.equals("uncommon"))
-			    			color = ChatColor.AQUA+"";
-			    		else if(rarity.equals("unique"))
-			    			color = ChatColor.YELLOW+"";
-			    		else if(rarity.equals("rare"))
-			    			color = ChatColor.LIGHT_PURPLE+"";
-			    		lores.add("");
-			    		lores.add(color+(rarity.charAt(0)+"").toUpperCase()+rarity.substring(1)+" Item");
-			    		im.setDisplayName(info[0]);
-			    		im.setLore(lores);
-			    		item.setItemMeta(im);
-			    		listOfItems.add(item);
-			    	}
-			    	
-			    }
+				if(line.contains(",") && line.contains("::")){
+					String identifier = line.substring(0, line.indexOf(","));
+					String firstEl = identifier.substring(0, identifier.indexOf("::"));
+					if(firstEl.equals(lookedFor+"."+minLevel) || (lookedFor.equals("any") && (firstEl.equals("common."+minLevel) || firstEl.equals("uncommon."+minLevel) || firstEl.equals("unique."+minLevel) || firstEl.equals("rare."+minLevel)))){
+						rarity = firstEl.substring(0, firstEl.indexOf("."));
+						String hexString = line.substring(line.lastIndexOf(",")+2);    
+				    	byte[] bytes = null;
+						try {
+							bytes = Hex.decodeHex(hexString.toCharArray());
+						} catch (DecoderException e) {
+							e.printStackTrace();
+							//getLogger().info("DECODER EXCEPTION! What's that?");
+						}
+						
+						String itemString = new String(bytes, "UTF-8");
+				    	String[] info = new String[2];
+				    	if(itemString.contains(itemType)){
+				    		String[] infoArr = itemString.split(String.format("%n"));
+				    		outerloop:
+				    		for(int i = 0; i < infoArr.length; i++){
+				    			if(infoArr[i].contains("display-name:")){
+									info[0] = infoArr[i].substring(infoArr[i].indexOf("display-name:")+14);
+				    			}
+				    			else if(infoArr[i].contains("Attack:")){
+									info[1] = infoArr[i].substring(infoArr[i].indexOf("Attack:")+8, infoArr[i].length()-1);
+				    			}
+								
+								if(info[0] != null && info[1] != null){
+									break outerloop;
+								}
+				    		}
+				    		ItemStack item = new ItemStack(Material.getMaterial(itemType));
+				    		ItemMeta im = item.getItemMeta();
+				    		List<String> lores = new ArrayList<String>();
+				    		lores.add(ChatColor.RED+"\u2694 Attack: "+info[1]);
+				    		lores.add(ChatColor.GOLD+"\u2723 Min. Level: "+minLevel);
+				    		String color = ChatColor.WHITE+"";
+				    		if(rarity.equals("uncommon"))
+				    			color = ChatColor.AQUA+"";
+				    		else if(rarity.equals("unique"))
+				    			color = ChatColor.YELLOW+"";
+				    		else if(rarity.equals("rare"))
+				    			color = ChatColor.LIGHT_PURPLE+"";
+				    		lores.add("");
+				    		lores.add(color+(rarity.charAt(0)+"").toUpperCase()+rarity.substring(1)+" Item");
+				    		im.setDisplayName(info[0]);
+				    		im.setLore(lores);
+				    		item.setItemMeta(im);
+				    		listOfItems.add(item);
+				    	}
+				    	
+				    }
+				}
 			}
 		} catch (IOException e) {
 			e.printStackTrace();
@@ -179,11 +182,13 @@ public class KingdomLifeAPI extends JavaPlugin{
 		
 		try {
 			while ((line = br.readLine()) != null) {
-				String[] arr = line.split(",");
-				if(arr[0].equals("level."+type+"."+uuid)){
-					int level = Integer.parseInt(arr[2].substring(1), 16);
-					br.close();
-					return level;
+				if(line.contains(",")){
+					String identifier = line.substring(0, line.indexOf(","));
+					if(identifier.equals("level."+type+"."+uuid)){
+						int level = Integer.parseInt(line.substring(line.lastIndexOf(",")+2), 16);
+						br.close();
+						return level;
+					}
 				}
 			}
 		} catch (IOException e) {
@@ -195,24 +200,45 @@ public class KingdomLifeAPI extends JavaPlugin{
 	}
 	
 	public String type(String uuid){
-		BufferedReader br = null;
+		ReversedLinesFileReader br = null;
 		String line = "";
 		String last = null;
 		
 		try {
-			br = new BufferedReader(new FileReader(path));
-		} catch (FileNotFoundException e) {
-			getLogger().info("FILE NOT FOUND!");
+			br = new ReversedLinesFileReader(new File(path));
+		} catch (IOException e) {
+			getLogger().info("IOEXCEPTION");
 			getLogger().info("PRINTING ERROR MESSAGE:");
 			getLogger().info(e.getMessage());
 			getLogger().info(e.getCause().toString());
 		}
 		try {
 			while ((line = br.readLine()) != null) {
-				String[] arr = line.split(",");
-				if(arr[0].equals("class."+uuid)){
-					last = arr[2].substring(1);
-			    }
+				if(line.contains(",")){
+					String identifier = line.substring(0, line.indexOf(","));
+					if(identifier.equals("class."+uuid)){
+						last = line.substring(line.lastIndexOf(",")+2);
+						
+						String hexString = last;    
+				    	byte[] bytes = null;
+						try {
+							bytes = Hex.decodeHex(hexString.toCharArray());
+						} catch (DecoderException e) {
+							e.printStackTrace();
+							//getLogger().info("DECODER EXCEPTION! What's that?");
+						}
+						
+						String classString = "";
+						try {
+							classString = new String(bytes, "UTF-8");
+						} catch (UnsupportedEncodingException e) {
+							e.printStackTrace();
+						}
+						
+						br.close();
+						return classString.toLowerCase().substring(2);
+				    }
+				}
 			}
 			br.close();
 		} catch (IOException e) {
@@ -220,26 +246,8 @@ public class KingdomLifeAPI extends JavaPlugin{
 			getLogger().info("ioexception type");
 		}
 		
-		if(last != null){
-			String hexString = last;    
-	    	byte[] bytes = null;
-			try {
-				bytes = Hex.decodeHex(hexString.toCharArray());
-			} catch (DecoderException e) {
-				e.printStackTrace();
-				//getLogger().info("DECODER EXCEPTION! What's that?");
-			}
-			
-			String classString = "";
-			try {
-				classString = new String(bytes, "UTF-8");
-			} catch (UnsupportedEncodingException e) {
-				e.printStackTrace();
-			}
-			return classString.toLowerCase().substring(2);
-		}
 		
-		return "null";
+		return "selclass";
 	}
 	
 	public boolean onCommand(CommandSender sender, Command cmd, String label, String[] args){
@@ -264,7 +272,7 @@ public class KingdomLifeAPI extends JavaPlugin{
 				else
 					uuid = player.getUniqueId().toString();
 				String type = type(uuid);
-				((Player)sender).sendMessage(ChatColor.YELLOW+args[1]+ChatColor.GRAY+" is a level "+level(uuid, type)+" "+type);
+				((Player)sender).sendMessage(ChatColor.YELLOW+args[0]+ChatColor.GRAY+" is a level "+level(uuid, type)+" "+type);
 			}else{
 				String type = type(uuid);
 				((Player)sender).sendMessage(ChatColor.GRAY+"You are a level "+level(uuid, type)+" "+type);
