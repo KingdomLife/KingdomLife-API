@@ -15,6 +15,7 @@ import java.util.Stack;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.Material;
+import org.bukkit.OfflinePlayer;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
 import org.bukkit.configuration.file.FileConfiguration;
@@ -37,24 +38,20 @@ import com.rylinaux.plugman.util.PluginUtil;
 public class KingdomLifeAPI extends JavaPlugin{
 	private static String prefix = ChatColor.DARK_GRAY + "" + ChatColor.BOLD + "[" + ChatColor.GOLD + "KingdomLifeAPI" + ChatColor.DARK_GRAY + "" + ChatColor.BOLD + "] ";
 	static String path = (new File("")).getAbsolutePath()+"/plugins/Skript/variables.csv";
-	String[] plugins = {"LootCrates", "Mechanics", "Abilities"};
+	String[] plugins = {"LootCrates", "Mechanics", "Abilities", "AbilityPackage"};
 	//public Plugin plugin;
 	
 	public void onEnable(){
 		//plugin = this;
 		
-		PluginManager pM = getServer().getPluginManager();
+		/*PluginManager pM = getServer().getPluginManager();
 		for(String s : plugins){
 			Plugin p = pM.getPlugin(s);
 			if(p != null)
 				PluginUtil.reload(p);
-		}
+		}*/
 		
 		getLogger().info("KINGDOMLIFE API ENABLED");
-		
-		
-		
-		//getServer().getServicesManager().register(KingdomLifeAPI.class, this, plugin, ServicePriority.Highest);
 	}
 	
 	public void onDisable(){
@@ -78,10 +75,6 @@ public class KingdomLifeAPI extends JavaPlugin{
 		try {
 			br = new BufferedReader(new FileReader(path));
 		} catch (FileNotFoundException e) {
-			//getLogger().info("FILE NOT FOUND!");
-			//getLogger().info("PRINTING ERROR MESSAGE:");
-			//getLogger().info(e.getMessage());
-			//getLogger().info(e.getCause().toString());
 		}
 		
 		List<ItemStack> listOfItems = new ArrayList<ItemStack>();
@@ -110,7 +103,6 @@ public class KingdomLifeAPI extends JavaPlugin{
 							bytes = Hex.decodeHex(hexString.toCharArray());
 						} catch (DecoderException e) {
 							e.printStackTrace();
-							//getLogger().info("DECODER EXCEPTION! What's that?");
 						}
 						
 						String itemString = new String(bytes, "UTF-8");
@@ -136,12 +128,15 @@ public class KingdomLifeAPI extends JavaPlugin{
 				    		lores.add(ChatColor.RED+"\u2694 Attack: "+info[1]);
 				    		lores.add(ChatColor.GOLD+"\u2723 Min. Level: "+minLevel);
 				    		String color = ChatColor.WHITE+"";
-				    		if(rarity.equals("uncommon"))
-				    			color = ChatColor.AQUA+"";
-				    		else if(rarity.equals("unique"))
+				    		if(rarity.equals("unique"))
 				    			color = ChatColor.YELLOW+"";
 				    		else if(rarity.equals("rare"))
+				    			color = ChatColor.GREEN+"";
+				    		else if(rarity.equals("legendary"))
+				    			color = ChatColor.AQUA+"";
+				    		else if(rarity.equals("mythical"))
 				    			color = ChatColor.LIGHT_PURPLE+"";
+				    		
 				    		lores.add("");
 				    		lores.add(color+(rarity.charAt(0)+"").toUpperCase()+rarity.substring(1)+" Item");
 				    		im.setDisplayName(info[0]);
@@ -154,14 +149,12 @@ public class KingdomLifeAPI extends JavaPlugin{
 				}
 			}
 		} catch (IOException e) {
-			e.printStackTrace();
-			//getLogger().info("IO EXCEPTION, dunno what caused it.");
 		}
-		
-		try {
-			br.close();
-		} catch (IOException e) {
-			e.printStackTrace();
+		finally {
+			try {
+				br.close();
+			} catch (IOException e) {
+			}
 		}
 		
 		return listOfItems;
@@ -195,8 +188,133 @@ public class KingdomLifeAPI extends JavaPlugin{
 			e.printStackTrace();
 			getLogger().info("ioexception level");
 		}
+		finally {
+			try {
+				br.close();
+			} catch (IOException e) {
+			}
+		}
+		
 		
 		return -1;
+	}
+	
+	public int karma(String uuid){
+		BufferedReader br = null;
+		String line = "";
+		
+		try {
+			br = new BufferedReader(new FileReader(path));
+		} catch (FileNotFoundException e) {
+			getLogger().info("FILE NOT FOUND!");
+			getLogger().info("PRINTING ERROR MESSAGE:");
+			getLogger().info(e.getMessage());
+			getLogger().info(e.getCause().toString());
+		}
+		
+		try {
+			while ((line = br.readLine()) != null) {
+				if(line.contains(",")){
+					String identifier = line.substring(0, line.indexOf(","));
+					if(identifier.equals("karma."+uuid)){
+						double karma = Double.longBitsToDouble(Long.parseLong(line.substring(line.lastIndexOf(",")+2), 16));
+						br.close();
+						return (int)karma;
+					}
+				}
+			}
+		} catch (IOException e) {
+			e.printStackTrace();
+			getLogger().info("ioexception level");
+		}
+		finally {
+			try {
+				br.close();
+			} catch (IOException e) {
+			}
+		}
+		
+		return -1;
+	}
+	
+	public String title(String uuid){
+		BufferedReader br = null;
+		String line = "";
+		
+		try {
+			br = new BufferedReader(new FileReader(path));
+		} catch (FileNotFoundException e) {
+			getLogger().info("FILE NOT FOUND!");
+			getLogger().info("PRINTING ERROR MESSAGE:");
+			getLogger().info(e.getMessage());
+			getLogger().info(e.getCause().toString());
+		}
+		
+		try {
+			while ((line = br.readLine()) != null) {
+				if(line.contains(",")){
+					String identifier = line.substring(0, line.indexOf(","));
+					if(identifier.equals("title."+uuid)){
+						String hexString = line.substring(line.lastIndexOf(",")+2);;    
+				    	byte[] bytes = null;
+						try {
+							bytes = Hex.decodeHex(hexString.toCharArray());
+						} catch (DecoderException e) {
+							e.printStackTrace();
+							//getLogger().info("DECODER EXCEPTION! What's that?");
+						}
+						
+						String title = "";
+						try {
+							title = new String(bytes, "UTF-8");
+						} catch (UnsupportedEncodingException e) {
+							e.printStackTrace();
+						}
+						
+						br.close();
+						
+						return title.substring(2);
+					}
+				}
+			}
+		} catch (IOException e) {
+			e.printStackTrace();
+			getLogger().info("ioexception level");
+		}
+		finally {
+			try {
+				br.close();
+			} catch (IOException e) {
+			}
+		}
+		
+		return "Guest";
+	}
+	
+	public ChatColor color(String title){
+		if(title.contains("Guest"))
+			return ChatColor.DARK_GRAY;
+		else if(title.contains("Administrator"))
+			return ChatColor.DARK_RED;
+		else if(title.contains("Head"))
+			return ChatColor.DARK_PURPLE;
+		else if(title.contains("Lead"))
+			return ChatColor.BLUE;
+		else
+			return ChatColor.GOLD;
+	}
+	
+	public ChatColor secColor(String title){
+		if(title.contains("Guest"))
+			return ChatColor.GRAY;
+		else if(title.contains("Administrator"))
+			return ChatColor.RED;
+		else if(title.contains("Head"))
+			return ChatColor.LIGHT_PURPLE;
+		else if(title.contains("Lead"))
+			return ChatColor.AQUA;
+		else
+			return ChatColor.YELLOW;
 	}
 	
 	public String type(String uuid){
@@ -207,10 +325,7 @@ public class KingdomLifeAPI extends JavaPlugin{
 		try {
 			br = new ReversedLinesFileReader(new File(path));
 		} catch (IOException e) {
-			getLogger().info("IOEXCEPTION");
-			getLogger().info("PRINTING ERROR MESSAGE:");
-			getLogger().info(e.getMessage());
-			getLogger().info(e.getCause().toString());
+			return "selclass";
 		}
 		try {
 			while ((line = br.readLine()) != null) {
@@ -245,9 +360,74 @@ public class KingdomLifeAPI extends JavaPlugin{
 			e.printStackTrace();
 			getLogger().info("ioexception type");
 		}
+		finally {
+			try {
+				br.close();
+			} catch (IOException e) {
+			}
+		}
 		
 		
 		return "selclass";
+	}
+	
+	public String karmaTitleName(String uuid, String name){
+		String title = title(uuid);
+		int karma = karma(uuid);
+		ChatColor color = color(title);
+		ChatColor secColor = secColor(title);
+		return color+"["+karma+"] "+title+" "+ChatColor.DARK_GRAY+": "+secColor+name;
+	}
+	
+	public List<Object[]> classInfo(String uuid){
+		List<Object[]> classes = new ArrayList<Object[]>();
+		
+		BufferedReader br = null;
+		String line = "";
+		
+		try {
+			br = new BufferedReader(new FileReader(path));
+		} catch (FileNotFoundException e) {
+			getLogger().info("FILE NOT FOUND!");
+			getLogger().info("PRINTING ERROR MESSAGE:");
+			getLogger().info(e.getMessage());
+			getLogger().info(e.getCause().toString());
+		}
+		
+		try {
+			while ((line = br.readLine()) != null) {
+				if(line.contains(",")){
+					String identifier = line.substring(0, line.indexOf(","));
+					if(identifier.contains("var.") && identifier.contains(uuid)){
+						int varNum = Integer.parseInt(identifier.substring(identifier.lastIndexOf(":")+1));
+						if(varNum != 1)
+							continue;
+						
+						String className = identifier.substring(identifier.indexOf(".")+1, identifier.lastIndexOf("."));
+						int hI = className.indexOf("-");
+						className = className.substring(0, hI+1) + (className.charAt(hI+1)+"").toUpperCase() + className.substring(hI+2);
+						
+						double health = Long.parseLong(line.substring(line.lastIndexOf(",")+2), 16);
+						line = br.readLine();
+						double maxHealth = Double.longBitsToDouble(Long.parseLong(line.substring(line.lastIndexOf(",")+2), 16));
+						line = br.readLine();
+						double mana = Double.longBitsToDouble(Long.parseLong(line.substring(line.lastIndexOf(",")+2), 16));
+						
+						Object[] info = {className, health, maxHealth, mana};
+						classes.add(info);
+					}
+				}
+			}
+		} catch (IOException e) {
+		}
+		finally {
+			try {
+				br.close();
+			} catch (IOException e) {
+			}
+		}
+		
+		return classes;
 	}
 	
 	public boolean onCommand(CommandSender sender, Command cmd, String label, String[] args){
@@ -264,19 +444,27 @@ public class KingdomLifeAPI extends JavaPlugin{
 	        player.openInventory(inv);
 	        return true;
 		}else if(cmd.getName().equalsIgnoreCase("apiinfo")){
-			String uuid = ((Player) sender).getUniqueId().toString();
+			String uuid = "";
+			String name = "";
+			if(sender instanceof Player){
+				uuid = ((Player) sender).getUniqueId().toString();
+				name = ((Player) sender).getName();
+			}
 			if(args.length > 0){
 				Player player = Bukkit.getServer().getPlayer(args[0]);
-				if(player == null)
-					uuid = Bukkit.getServer().getOfflinePlayer(args[0]).getUniqueId().toString();
-				else
+				if(player == null){
+					OfflinePlayer offP = Bukkit.getServer().getOfflinePlayer(args[0]);
+					uuid = offP.getUniqueId().toString();
+					name = offP.getName();
+				}
+				else {
 					uuid = player.getUniqueId().toString();
-				String type = type(uuid);
-				((Player)sender).sendMessage(ChatColor.YELLOW+args[0]+ChatColor.GRAY+" is a level "+level(uuid, type)+" "+type);
-			}else{
-				String type = type(uuid);
-				((Player)sender).sendMessage(ChatColor.GRAY+"You are a level "+level(uuid, type)+" "+type);
+					name = player.getName();
+				}
 			}
+			
+			String type = type(uuid);
+			((Player)sender).sendMessage(karmaTitleName(uuid, name)+ChatColor.GRAY+" is a level "+level(uuid, type)+" "+type);
 			return true;
 		}
 		return false;
